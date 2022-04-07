@@ -1,0 +1,644 @@
+import "strings"
+import "types"
+
+_modules = {
+	"root": {
+		"data":    {},
+		"modules": {},
+		"outputs": {
+			"lb_dns_name": {
+				"depends_on":  [],
+				"description": "The DNS name of the load balancer",
+				"references": [
+					"aws_lb.external-elb.dns_name",
+					"aws_lb.external-elb",
+				],
+				"sensitive": false,
+				"value":     undefined,
+			},
+		},
+		"providers": {
+			"aws": {
+				"alias": {
+					"": {
+						"config": {
+							"access_key": "AKIAQ67O2S3WGM5KFLWZ",
+							"region":     "us-east-1",
+							"secret_key": "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",
+						},
+						"references": {
+							"access_key": [],
+							"region":     [],
+							"secret_key": [],
+						},
+						"version": "~> 3.0",
+					},
+				},
+				"config": {
+					"access_key": "AKIAQ67O2S3WGM5KFLWZ",
+					"region":     "us-east-1",
+					"secret_key": "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",
+				},
+				"references": {
+					"access_key": [],
+					"region":     [],
+					"secret_key": [],
+				},
+				"version": "~> 3.0",
+			},
+		},
+		"resources": {
+			"aws_db_instance": {
+				"default": {
+					"config": {
+						"allocated_storage":   10,
+						"engine":              "mysql",
+						"engine_version":      "8.0.20",
+						"instance_class":      "db.t2.micro",
+						"multi_az":            false,
+						"name":                "mydb",
+						"password":            "password",
+						"skip_final_snapshot": true,
+						"username":            "username",
+					},
+					"provisioners": null,
+					"references": {
+						"allocated_storage": [],
+						"db_subnet_group_name": [
+							"aws_db_subnet_group.default.id",
+							"aws_db_subnet_group.default",
+						],
+						"engine":              [],
+						"engine_version":      [],
+						"instance_class":      [],
+						"multi_az":            [],
+						"name":                [],
+						"password":            [],
+						"skip_final_snapshot": [],
+						"username":            [],
+						"vpc_security_group_ids": [
+							"aws_security_group.database-sg.id",
+							"aws_security_group.database-sg",
+						],
+					},
+				},
+			},
+			"aws_db_subnet_group": {
+				"default": {
+					"config": {
+						"name": "main",
+						"tags": {
+							"Name": "My DB subnet group",
+						},
+					},
+					"provisioners": null,
+					"references": {
+						"name": [],
+						"subnet_ids": [
+							"aws_subnet.database-subnet-1.id",
+							"aws_subnet.database-subnet-1",
+							"aws_subnet.database-subnet-2.id",
+							"aws_subnet.database-subnet-2",
+						],
+						"tags": [],
+					},
+				},
+			},
+			"aws_instance": {
+				"webserver1": {
+					"config": {
+						"ami":               "ami-0d5eff06f840b45e9",
+						"availability_zone": "us-east-1a",
+						"instance_type":     "t2.micro",
+						"tags": {
+							"Name": "Web Server",
+						},
+						"user_data": null,
+					},
+					"provisioners": null,
+					"references": {
+						"ami":               [],
+						"availability_zone": [],
+						"instance_type":     [],
+						"subnet_id": [
+							"aws_subnet.web-subnet-1.id",
+							"aws_subnet.web-subnet-1",
+						],
+						"tags":      [],
+						"user_data": [],
+						"vpc_security_group_ids": [
+							"aws_security_group.webserver-sg.id",
+							"aws_security_group.webserver-sg",
+						],
+					},
+				},
+				"webserver2": {
+					"config": {
+						"ami":               "ami-0d5eff06f840b45e9",
+						"availability_zone": "us-east-1b",
+						"instance_type":     "t2.micro",
+						"tags": {
+							"Name": "Web Server",
+						},
+						"user_data": null,
+					},
+					"provisioners": null,
+					"references": {
+						"ami":               [],
+						"availability_zone": [],
+						"instance_type":     [],
+						"subnet_id": [
+							"aws_subnet.web-subnet-2.id",
+							"aws_subnet.web-subnet-2",
+						],
+						"tags":      [],
+						"user_data": [],
+						"vpc_security_group_ids": [
+							"aws_security_group.webserver-sg.id",
+							"aws_security_group.webserver-sg",
+						],
+					},
+				},
+			},
+			"aws_internet_gateway": {
+				"igw": {
+					"config": {
+						"tags": {
+							"Name": "Demo IGW",
+						},
+					},
+					"provisioners": null,
+					"references": {
+						"tags": [],
+						"vpc_id": [
+							"aws_vpc.my-vpc.id",
+							"aws_vpc.my-vpc",
+						],
+					},
+				},
+			},
+			"aws_lb": {
+				"external-elb": {
+					"config": {
+						"internal":           false,
+						"load_balancer_type": "application",
+						"name":               "External-LB",
+					},
+					"provisioners": null,
+					"references": {
+						"internal":           [],
+						"load_balancer_type": [],
+						"name":               [],
+						"security_groups": [
+							"aws_security_group.web-sg.id",
+							"aws_security_group.web-sg",
+						],
+						"subnets": [
+							"aws_subnet.web-subnet-1.id",
+							"aws_subnet.web-subnet-1",
+							"aws_subnet.web-subnet-2.id",
+							"aws_subnet.web-subnet-2",
+						],
+					},
+				},
+			},
+			"aws_lb_listener": {
+				"external-elb": {
+					"config": {
+						"default_action": [
+							{
+								"type": "forward",
+							},
+						],
+						"port":     "80",
+						"protocol": "HTTP",
+					},
+					"provisioners": null,
+					"references": {
+						"default_action": [
+							{
+								"target_group_arn": [
+									"aws_lb_target_group.external-elb.arn",
+									"aws_lb_target_group.external-elb",
+								],
+								"type": [],
+							},
+						],
+						"load_balancer_arn": [
+							"aws_lb.external-elb.arn",
+							"aws_lb.external-elb",
+						],
+						"port":     [],
+						"protocol": [],
+					},
+				},
+			},
+			"aws_lb_target_group": {
+				"external-elb": {
+					"config": {
+						"name":     "ALB-TG",
+						"port":     80,
+						"protocol": "HTTP",
+					},
+					"provisioners": null,
+					"references": {
+						"name":     [],
+						"port":     [],
+						"protocol": [],
+						"vpc_id": [
+							"aws_vpc.my-vpc.id",
+							"aws_vpc.my-vpc",
+						],
+					},
+				},
+			},
+			"aws_lb_target_group_attachment": {
+				"external-elb1": {
+					"config": {
+						"port": 80,
+					},
+					"provisioners": null,
+					"references": {
+						"port": [],
+						"target_group_arn": [
+							"aws_lb_target_group.external-elb.arn",
+							"aws_lb_target_group.external-elb",
+						],
+						"target_id": [
+							"aws_instance.webserver1.id",
+							"aws_instance.webserver1",
+						],
+					},
+				},
+				"external-elb2": {
+					"config": {
+						"port": 80,
+					},
+					"provisioners": null,
+					"references": {
+						"port": [],
+						"target_group_arn": [
+							"aws_lb_target_group.external-elb.arn",
+							"aws_lb_target_group.external-elb",
+						],
+						"target_id": [
+							"aws_instance.webserver2.id",
+							"aws_instance.webserver2",
+						],
+					},
+				},
+			},
+			"aws_route_table": {
+				"web-rt": {
+					"config": {
+						"tags": {
+							"Name": "WebRT",
+						},
+					},
+					"provisioners": null,
+					"references": {
+						"route": [
+							"aws_internet_gateway.igw.id",
+							"aws_internet_gateway.igw",
+						],
+						"tags": [],
+						"vpc_id": [
+							"aws_vpc.my-vpc.id",
+							"aws_vpc.my-vpc",
+						],
+					},
+				},
+			},
+			"aws_route_table_association": {
+				"a": {
+					"config":       {},
+					"provisioners": null,
+					"references": {
+						"route_table_id": [
+							"aws_route_table.web-rt.id",
+							"aws_route_table.web-rt",
+						],
+						"subnet_id": [
+							"aws_subnet.web-subnet-1.id",
+							"aws_subnet.web-subnet-1",
+						],
+					},
+				},
+				"b": {
+					"config":       {},
+					"provisioners": null,
+					"references": {
+						"route_table_id": [
+							"aws_route_table.web-rt.id",
+							"aws_route_table.web-rt",
+						],
+						"subnet_id": [
+							"aws_subnet.web-subnet-2.id",
+							"aws_subnet.web-subnet-2",
+						],
+					},
+				},
+			},
+			"aws_security_group": {
+				"database-sg": {
+					"config": {
+						"description": "Allow inbound traffic from application layer",
+						"egress": [
+							{
+								"cidr_blocks": [
+									"0.0.0.0/0",
+								],
+								"description":      null,
+								"from_port":        32768,
+								"ipv6_cidr_blocks": null,
+								"prefix_list_ids":  null,
+								"protocol":         "tcp",
+								"security_groups":  null,
+								"self":             null,
+								"to_port":          65535,
+							},
+						],
+						"name": "Database-SG",
+						"tags": {
+							"Name": "Database-SG",
+						},
+					},
+					"provisioners": null,
+					"references": {
+						"description": [],
+						"egress":      [],
+						"ingress": [
+							"aws_security_group.webserver-sg.id",
+							"aws_security_group.webserver-sg",
+						],
+						"name": [],
+						"tags": [],
+						"vpc_id": [
+							"aws_vpc.my-vpc.id",
+							"aws_vpc.my-vpc",
+						],
+					},
+				},
+				"web-sg": {
+					"config": {
+						"description": "Allow HTTP inbound traffic",
+						"egress": [
+							{
+								"cidr_blocks": [
+									"0.0.0.0/0",
+								],
+								"description":      null,
+								"from_port":        0,
+								"ipv6_cidr_blocks": null,
+								"prefix_list_ids":  null,
+								"protocol":         "-1",
+								"security_groups":  null,
+								"self":             null,
+								"to_port":          0,
+							},
+						],
+						"ingress": [
+							{
+								"cidr_blocks": [
+									"0.0.0.0/0",
+								],
+								"description":      "HTTP from VPC",
+								"from_port":        80,
+								"ipv6_cidr_blocks": null,
+								"prefix_list_ids":  null,
+								"protocol":         "tcp",
+								"security_groups":  null,
+								"self":             null,
+								"to_port":          80,
+							},
+						],
+						"name": "Web-SG",
+						"tags": {
+							"Name": "Web-SG",
+						},
+					},
+					"provisioners": null,
+					"references": {
+						"description": [],
+						"egress":      [],
+						"ingress":     [],
+						"name":        [],
+						"tags":        [],
+						"vpc_id": [
+							"aws_vpc.my-vpc.id",
+							"aws_vpc.my-vpc",
+						],
+					},
+				},
+				"webserver-sg": {
+					"config": {
+						"description": "Allow inbound traffic from ALB",
+						"egress": [
+							{
+								"cidr_blocks": [
+									"0.0.0.0/0",
+								],
+								"description":      null,
+								"from_port":        0,
+								"ipv6_cidr_blocks": null,
+								"prefix_list_ids":  null,
+								"protocol":         "-1",
+								"security_groups":  null,
+								"self":             null,
+								"to_port":          0,
+							},
+						],
+						"name": "Webserver-SG",
+						"tags": {
+							"Name": "Webserver-SG",
+						},
+					},
+					"provisioners": null,
+					"references": {
+						"description": [],
+						"egress":      [],
+						"ingress": [
+							"aws_security_group.web-sg.id",
+							"aws_security_group.web-sg",
+						],
+						"name": [],
+						"tags": [],
+						"vpc_id": [
+							"aws_vpc.my-vpc.id",
+							"aws_vpc.my-vpc",
+						],
+					},
+				},
+			},
+			"aws_subnet": {
+				"application-subnet-1": {
+					"config": {
+						"availability_zone":       "us-east-1a",
+						"cidr_block":              "10.0.11.0/24",
+						"map_public_ip_on_launch": false,
+						"tags": {
+							"Name": "Application-1a",
+						},
+					},
+					"provisioners": null,
+					"references": {
+						"availability_zone":       [],
+						"cidr_block":              [],
+						"map_public_ip_on_launch": [],
+						"tags": [],
+						"vpc_id": [
+							"aws_vpc.my-vpc.id",
+							"aws_vpc.my-vpc",
+						],
+					},
+				},
+				"application-subnet-2": {
+					"config": {
+						"availability_zone":       "us-east-1b",
+						"cidr_block":              "10.0.12.0/24",
+						"map_public_ip_on_launch": false,
+						"tags": {
+							"Name": "Application-2b",
+						},
+					},
+					"provisioners": null,
+					"references": {
+						"availability_zone":       [],
+						"cidr_block":              [],
+						"map_public_ip_on_launch": [],
+						"tags": [],
+						"vpc_id": [
+							"aws_vpc.my-vpc.id",
+							"aws_vpc.my-vpc",
+						],
+					},
+				},
+				"database-subnet-1": {
+					"config": {
+						"availability_zone": "us-east-1a",
+						"cidr_block":        "10.0.21.0/24",
+						"tags": {
+							"Name": "Database-1a",
+						},
+					},
+					"provisioners": null,
+					"references": {
+						"availability_zone": [],
+						"cidr_block":        [],
+						"tags":              [],
+						"vpc_id": [
+							"aws_vpc.my-vpc.id",
+							"aws_vpc.my-vpc",
+						],
+					},
+				},
+				"database-subnet-2": {
+					"config": {
+						"availability_zone": "us-east-1b",
+						"cidr_block":        "10.0.22.0/24",
+						"tags": {
+							"Name": "Database-2b",
+						},
+					},
+					"provisioners": null,
+					"references": {
+						"availability_zone": [],
+						"cidr_block":        [],
+						"tags":              [],
+						"vpc_id": [
+							"aws_vpc.my-vpc.id",
+							"aws_vpc.my-vpc",
+						],
+					},
+				},
+				"web-subnet-1": {
+					"config": {
+						"availability_zone":       "us-east-1a",
+						"cidr_block":              "10.0.1.0/24",
+						"map_public_ip_on_launch": true,
+						"tags": {
+							"Name": "Web-1a",
+						},
+					},
+					"provisioners": null,
+					"references": {
+						"availability_zone":       [],
+						"cidr_block":              [],
+						"map_public_ip_on_launch": [],
+						"tags": [],
+						"vpc_id": [
+							"aws_vpc.my-vpc.id",
+							"aws_vpc.my-vpc",
+						],
+					},
+				},
+				"web-subnet-2": {
+					"config": {
+						"availability_zone":       "us-east-1b",
+						"cidr_block":              "10.0.2.0/24",
+						"map_public_ip_on_launch": true,
+						"tags": {
+							"Name": "Web-2b",
+						},
+					},
+					"provisioners": null,
+					"references": {
+						"availability_zone":       [],
+						"cidr_block":              [],
+						"map_public_ip_on_launch": [],
+						"tags": [],
+						"vpc_id": [
+							"aws_vpc.my-vpc.id",
+							"aws_vpc.my-vpc",
+						],
+					},
+				},
+			},
+			"aws_vpc": {
+				"my-vpc": {
+					"config": {
+						"cidr_block": "10.0.0.0/16",
+						"tags": {
+							"Name": "Demo VPC",
+						},
+					},
+					"provisioners": null,
+					"references": {
+						"cidr_block": [],
+						"tags":       [],
+					},
+				},
+			},
+		},
+		"variables": {},
+	},
+}
+
+module_paths = [
+	[],
+]
+
+module = func(path) {
+	if types.type_of(path) is not "list" {
+		error("expected list, got", types.type_of(path))
+	}
+
+	if length(path) < 1 {
+		return _modules.root
+	}
+
+	addr = []
+	for path as p {
+		append(addr, "module")
+		append(addr, p)
+	}
+
+	return _modules[strings.join(addr, ".")]
+}
+
+data = _modules.root.data
+modules = _modules.root.modules
+providers = _modules.root.providers
+resources = _modules.root.resources
+variables = _modules.root.variables
+outputs = _modules.root.outputs
